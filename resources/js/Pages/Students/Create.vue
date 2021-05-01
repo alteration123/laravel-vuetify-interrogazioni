@@ -48,12 +48,24 @@
                     <v-text-field
                         class="mt-6"
                         v-model="form.password"
+                        :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
                         :error-messages="passwordErrors"
-                        :counter="20"
+                        :type="showPassword ? 'text' : 'password'"
+                        name="password"
                         label="Password"
+                        hint="Almeno 6 caratteri, massimo 20"
+                        counter
+                        @click:append="showPassword = !showPassword"
                         required
                         @input="$v.form.password.$touch()"
                         @blur="$v.form.password.$touch()" />
+                    <div class="v-text-field__details">
+                        <div class="v-messages theme--light error--text" role="alert">
+                                <div class="v-messages__message" v-for="error in otherErrors">
+                                    <span class="red--text">{{ error }}</span>
+                                </div>
+                        </div>
+                    </div>
                     <div class=" mt-6">
                         <v-btn
                             :disabled="loading"
@@ -68,6 +80,15 @@
                 </form>
             </v-card>
         </div>
+        <v-snackbar
+            v-model="this.reset"
+            absolute
+            bottom
+            right
+            color="blue"
+            :vertical="true">
+            Campi resettati
+        </v-snackbar>
     </app-layout>
 </template>
 
@@ -97,9 +118,12 @@ export default {
 
     data() {
         return {
+            showPassword: false,
             loading: false,
+            reset: false,
             //non è il modo corretto di farlo
             ages: ['-- Seleziona --', 10, 11, 12, 13, 14, 15, 16, 17, 18],
+            //il modo corretto è creare un metodo che returna un array creato dinamicamente
             form: this.$inertia.form({
                 first_name: '',
                 last_name: '',
@@ -117,9 +141,11 @@ export default {
     computed: {
         firstNameErrors () {
             const errors = []
+            //errori frontend
             if (!this.$v.form.first_name.$dirty) return errors
             !this.$v.form.first_name.required && errors.push('Il nome è obbligatorio')
             !this.$v.form.first_name.maxLength && errors.push('Il nome deve essere massimo di 20 caratteri!')
+            //errori provenienti dal backend
             if (this.form.errors.validation['first_name']) {
                 errors.push(this.form.errors.validation['first_name'])
             }
@@ -171,6 +197,14 @@ export default {
             }
             return errors
         },
+
+        otherErrors() {
+            const errors = []
+            if (this.form.errors.validation['user_id']) {
+                errors.push(this.form.errors.validation['user_id'])
+            }
+            return errors;
+        },
     },
 
     watch: {
@@ -190,14 +224,14 @@ export default {
                     //salvataggio riuscito
                 } else {
                     //errore nel controller
-
                 }
             }
         }
     },
 
-    mounted() {
+    beforeMount() {
         this.form.errors['validation'] = [];
+        this.form.errors['validation']['user_id'] = null;
         this.form.errors['validation']['first_name'] = null;
         this.form.errors['validation']['last_name'] = null;
         this.form.errors['validation']['email'] = null;
@@ -223,7 +257,10 @@ export default {
             this.form.first_name = ''
             this.form.last_name = ''
             this.form.email = ''
+            this.form.password = ''
             this.form.age = this.ages[0]
+            this.reset = true
+            setTimeout(() => this.reset = false, 2000);
         },
     },
 }

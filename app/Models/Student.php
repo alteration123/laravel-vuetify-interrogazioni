@@ -2,11 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /*
  * EXAMPLE::PROGETTO model studente
+ */
+
+/**
+ * Class Student
+ * @property User user
+ * @package App\Models
  */
 class Student extends Model
 {
@@ -17,7 +26,7 @@ class Student extends Model
      *
      * @var string[]
      */
-    protected $fillable = ['first_name', 'last_name', 'email', 'age', 'user_id'];
+    protected $fillable = ['first_name', 'last_name', 'age', 'user_id'];
 
     /**
      * The attributes that should be cast.
@@ -33,11 +42,19 @@ class Student extends Model
     ];
 
     /**
+     * @return string
+     */
+    public function getEmailAttribute(): string
+    {
+        return $this->user->email;
+    }
+
+    /**
      * Filtri presenti sulla pagina
      *
      * @return string[]
      */
-    public static function getFilters()
+    public static function getFilters(): array
     {
         return ['search', 'sort_order', 'sort_field'];
     }
@@ -45,30 +62,38 @@ class Student extends Model
     /**
      * funzione per filtrare
      *
-     * @param $query
+     * @param Builder $query
      * @param array $filters
      */
-    public function scopeFilter($query, array $filters)
+    public function scopeFilter(Builder $query, array $filters)
     {
         $query->when($filters['search'] ?? null, function ($query, $search) {
-            $query->where(function ($query) use ($search) {
-                $query->where('first_name', 'like', '%'.$search.'%')
-                    ->orWhere('last_name', 'like', '%'.$search.'%')
-                    ->orWhere('email', 'like', '%'.$search.'%');
+            $query->where(function (Builder $query) use ($search) {
+                $query->where('first_name', 'like', '%' . $search . '%')
+                    ->orWhere('last_name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%')
+                    ->orWhereHas('user', function (Builder $query) use ($search) {
+                        $query->where('email', 'like', '%' . $search . '%');
+                    });
             });
-        })->when($filters['sort_field'] ?? null, function ($query, $sortField) use ($filters) {
-            $query->orderBy($sortField, $filters['sort_order']);
+        })->when($filters['sort_field'] ?? null, function (Builder $query, string $sortField) use ($filters) {
+            if (strpos($sortField, 'email') !== false) {
+                $query->join('users', 'users.id', '=', 'students.user_id', 'students')
+                    ->orderBy('email', $filters['sort_order']);
+            } else {
+                $query->orderBy($sortField, $filters['sort_order']);
+            }
         });
     }
 
     // SPECIFICA LA RELAZIONE 1-1 con user
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
     // SPECIFIFCA LA RELAZIONE students <--->> votes (uno studente ha + [has many] voti)
-    public function votes()
+    public function votes(): HasMany
     {
         return $this->hasMany(Vote::class);
     }

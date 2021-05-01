@@ -3,15 +3,17 @@
 namespace App\Validators;
 
 use Illuminate\Contracts\Validation\Factory;
+use Illuminate\Validation\ValidationException;
 
 abstract class EntityValidator
 {
     /**
      * @param $data
      * @param array $extendParameters
-     * @return mixed
+     * @return array
+     * @throws ValidationException
      */
-    public function validateData($data, $extendParameters = [])
+    public function validateData($data, $extendParameters = []): array
     {
         return $this->getValidationFactory()->make(
             $data, $this->getRules($extendParameters), $this->getMessages($extendParameters)
@@ -27,7 +29,7 @@ abstract class EntityValidator
      *
      * @return Factory
      */
-    protected function getValidationFactory()
+    protected function getValidationFactory(): Factory
     {
         return app(Factory::class);
     }

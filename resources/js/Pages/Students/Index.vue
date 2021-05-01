@@ -74,8 +74,8 @@ export default {
                     value: 'first_name',
                 },
                 { text: 'Cognome', value: 'last_name', sortable: true },
-                { text: 'Email', value: 'email', sortable: true },
-                { text: 'Age', value: 'age', sortable: true },
+                { text: 'Email', value: 'user.email', sortable: true },
+                { text: 'Età', value: 'age', sortable: true },
             ],
         }
     },

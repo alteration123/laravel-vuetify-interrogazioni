@@ -4,9 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /*
  * EXAMPLE::PROGETTO model voto
+ */
+
+/**
+ * Class Vote
+ * @package App\Models
  */
 class Vote extends Model
 {
@@ -70,13 +76,13 @@ class Vote extends Model
     }
 
     //SPECIFIFCA LA RELAZIONE votes <<---> students (un voto appartiene (belongsTo) ad un solo studente)
-    public function student()
+    public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
     }
 
     //SPECIFIFCA LA RELAZIONE votes <<---> subjects (un voto appartiene (belongsTo) ad una sola materia)
-    public function subject()
+    public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
     }

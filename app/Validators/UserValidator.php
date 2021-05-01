@@ -7,7 +7,7 @@ use Illuminate\Validation\Rule;
 
 class UserValidator extends EntityValidator
 {
-    protected function getMessages($extendParameters)
+    protected function getMessages($extendParameters): array
     {
         return [
         ];
@@ -17,7 +17,7 @@ class UserValidator extends EntityValidator
      * @param $extendParameters
      * @return array
      */
-    protected function getRules($extendParameters)
+    protected function getRules($extendParameters): array
     {
         /** @var User $administrator */
         $user = array_key_exists('user', $extendParameters) ?

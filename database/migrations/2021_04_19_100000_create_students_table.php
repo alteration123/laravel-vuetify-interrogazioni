@@ -20,7 +20,6 @@ class CreateStudentsTable extends Migration
             $table->id();
             $table->string('first_name');
             $table->string('last_name');
-            $table->string('email');
             $table->integer('age');
             //gli studenti avranno associato un account -> devono avere user_id
             $table->foreignId('user_id')->unique()->references('id')->on('users')->onDelete('cascade');

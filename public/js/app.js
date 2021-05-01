@@ -5242,6 +5242,27 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -5280,9 +5301,12 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
   },
   data: function data() {
     return {
+      showPassword: false,
       loading: false,
+      reset: false,
       //non è il modo corretto di farlo
       ages: ['-- Seleziona --', 10, 11, 12, 13, 14, 15, 16, 17, 18],
+      //il modo corretto è creare un metodo che returna un array creato dinamicamente
       form: this.$inertia.form({
         first_name: '',
         last_name: '',
@@ -5298,10 +5322,11 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
   },
   computed: {
     firstNameErrors: function firstNameErrors() {
-      var errors = [];
+      var errors = []; //errori frontend
+
       if (!this.$v.form.first_name.$dirty) return errors;
       !this.$v.form.first_name.required && errors.push('Il nome è obbligatorio');
-      !this.$v.form.first_name.maxLength && errors.push('Il nome deve essere massimo di 20 caratteri!');
+      !this.$v.form.first_name.maxLength && errors.push('Il nome deve essere massimo di 20 caratteri!'); //errori provenienti dal backend
 
       if (this.form.errors.validation['first_name']) {
         errors.push(this.form.errors.validation['first_name']);
@@ -5358,6 +5383,15 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       }
 
       return errors;
+    },
+    otherErrors: function otherErrors() {
+      var errors = [];
+
+      if (this.form.errors.validation['user_id']) {
+        errors.push(this.form.errors.validation['user_id']);
+      }
+
+      return errors;
     }
   },
   watch: {
@@ -5382,8 +5416,9 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       }
     }
   },
-  mounted: function mounted() {
+  beforeMount: function beforeMount() {
     this.form.errors['validation'] = [];
+    this.form.errors['validation']['user_id'] = null;
     this.form.errors['validation']['first_name'] = null;
     this.form.errors['validation']['last_name'] = null;
     this.form.errors['validation']['email'] = null;
@@ -5401,11 +5436,18 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       }
     },
     clear: function clear() {
+      var _this = this;
+
       this.$v.$reset();
       this.form.first_name = '';
       this.form.last_name = '';
       this.form.email = '';
+      this.form.password = '';
       this.form.age = this.ages[0];
+      this.reset = true;
+      setTimeout(function () {
+        return _this.reset = false;
+      }, 2000);
     }
   }
 });
@@ -5507,10 +5549,10 @@ __webpack_require__.r(__webpack_exports__);
         sortable: true
       }, {
         text: 'Email',
-        value: 'email',
+        value: 'user.email',
         sortable: true
       }, {
-        text: 'Age',
+        text: 'Età',
         value: 'age',
         sortable: true
       }]
@@ -42661,12 +42703,19 @@ var render = function() {
                 _c("v-text-field", {
                   staticClass: "mt-6",
                   attrs: {
+                    "append-icon": _vm.showPassword ? "mdi-eye" : "mdi-eye-off",
                     "error-messages": _vm.passwordErrors,
-                    counter: 20,
+                    type: _vm.showPassword ? "text" : "password",
+                    name: "password",
                     label: "Password",
+                    hint: "Almeno 6 caratteri, massimo 20",
+                    counter: "",
                     required: ""
                   },
                   on: {
+                    "click:append": function($event) {
+                      _vm.showPassword = !_vm.showPassword
+                    },
                     input: function($event) {
                       return _vm.$v.form.password.$touch()
                     },
@@ -42682,6 +42731,24 @@ var render = function() {
                     expression: "form.password"
                   }
                 }),
+                _vm._v(" "),
+                _c("div", { staticClass: "v-text-field__details" }, [
+                  _c(
+                    "div",
+                    {
+                      staticClass: "v-messages theme--light error--text",
+                      attrs: { role: "alert" }
+                    },
+                    _vm._l(_vm.otherErrors, function(error) {
+                      return _c("div", { staticClass: "v-messages__message" }, [
+                        _c("span", { staticClass: "red--text" }, [
+                          _vm._v(_vm._s(error))
+                        ])
+                      ])
+                    }),
+                    0
+                  )
+                ]),
                 _vm._v(" "),
                 _c(
                   "div",
@@ -42722,8 +42789,30 @@ var render = function() {
           ])
         ],
         1
+      ),
+      _vm._v(" "),
+      _c(
+        "v-snackbar",
+        {
+          attrs: {
+            absolute: "",
+            bottom: "",
+            right: "",
+            color: "blue",
+            vertical: true
+          },
+          model: {
+            value: this.reset,
+            callback: function($$v) {
+              _vm.$set(this, "reset", $$v)
+            },
+            expression: "this.reset"
+          }
+        },
+        [_vm._v("\n        Campi resettati\n    ")]
       )
-    ]
+    ],
+    1
   )
 }
 var staticRenderFns = []
