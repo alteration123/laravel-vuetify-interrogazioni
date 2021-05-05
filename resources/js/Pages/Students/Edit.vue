@@ -128,10 +128,16 @@ export default {
         form: {
             first_name: { required, maxLength: maxLength(20) },
             last_name: { required, maxLength: maxLength(20) },
-            password: { required, maxLength: maxLength(20), minLength: minLength(4) },
+            //in questo caso la password non è required perché si tratta di un update
+            //ergo se viene messa sostituisce la vecchia, altrimenti lascia quella vecchia
+            password: { maxLength: maxLength(20), minLength: minLength(4) },
             age: { required, between: between(10, 18), numeric },
             email: { required, email },
         }
+    },
+
+    props: {
+        student: Object
     },
 
     data() {
@@ -144,11 +150,13 @@ export default {
             ages: ['-- Seleziona --', 10, 11, 12, 13, 14, 15, 16, 17, 18],
             //il modo corretto è creare un metodo che returna un array creato dinamicamente
             form: this.$inertia.form({
-                first_name: '',
-                last_name: '',
-                email: '',
-                password: '',
-                age: '-- Seleziona --'
+                id: this.student.id,
+                first_name: this.student.first_name,
+                last_name: this.student.last_name,
+                user_id: this.student.user_id,
+                email: this.student.email,
+                password: this.student.password,
+                age: this.student.age
             }, {
                 bag: 'validation',
                 errors: Object,
@@ -216,7 +224,6 @@ export default {
         passwordErrors () {
             const errors = []
             if (!this.$v.form.password.$dirty) return errors
-            !this.$v.form.password.required && errors.push('La password è obbligatoria')
             !this.$v.form.password.minLength && errors.push('La password deve contenere minimo 4 caratteri')
             !this.$v.form.password.maxLength && errors.push('La password deve contenere massimo 20 caratteri')
             if (this.form.errors.validation) {
@@ -270,18 +277,23 @@ export default {
                     .transform(data => ({
                         ... data
                     }))
-                    .post(this.route('students.store'))
+                    .put('/studenti/' + this.student.id, {
+                        preserveScroll: true
+                    })
             }
         },
 
         clear () {
+            //resetto gli errori
             this.$v.$reset()
-            this.form.first_name = ''
-            this.form.last_name = ''
-            this.form.email = ''
+            //resetto i valori originali del form
+            this.form.first_name = this.student.first_name
+            this.form.last_name = this.student.last_name
+            this.form.email = this.student.email
             this.form.password = ''
-            this.form.age = this.ages[0]
+            this.form.age = this.student.age
             this.reset = true
+            //dopo 2 secondi setto la variabile reset nuovamente a false
             setTimeout(() => this.reset = false, 2000);
         },
     },

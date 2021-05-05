@@ -3,16 +3,36 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Log;
 
+/*
+ * EXAMPLE::PROGETTODATABASE_SEEDER
+ */
 class DatabaseSeeder extends Seeder
 {
+    const N_STUDENT = 100;
+
     /**
-     * Seed the application's database.
-     *
-     * @return void
+     * @var StudentSeeder
      */
-    public function run()
+    protected $studentSeeder;
+
+    /**
+     * DatabaseSeeder constructor.
+     * @param StudentSeeder $studentSeeder
+     */
+    public function __construct(
+        StudentSeeder $studentSeeder
+    ) {
+        $this->studentSeeder = $studentSeeder;
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
+        $success = $this->studentSeeder->execute(self::N_STUDENT);
+        Log::info("Generati $success studenti su " . self::N_STUDENT);
     }
 }

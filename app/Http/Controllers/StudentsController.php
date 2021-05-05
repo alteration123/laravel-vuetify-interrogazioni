@@ -54,12 +54,18 @@ class StudentsController extends Controller
 
         return Inertia::render('Students/Index', [
             'students' => Student::query()
+                //applico i filtri del form
                 ->filter(\Illuminate\Support\Facades\Request::only(Student::getFilters()))
+                //passo anche i dati relativi all'user associato allo studente
                 ->with('user')
-                ->paginate()
+                //pagino i risultati
+                ->paginate(10, ['*'], 'page', request()->get('current_page'))
+                //passo i link della pagination
                 ->withQueryString()
+                //ciclo gli studenti della pagina e passo i dati dello studente + ID
                 ->through(function ($student) {
-                    return $student->toArray();
+                    //perché $student->toArray() non da l'ID? perché l'ID non è fillable
+                    return array_merge(['id' => $student->id], $student->toArray());
                 }),
         ]);
     }
@@ -123,7 +129,17 @@ class StudentsController extends Controller
     {
         $this->authorize('update', [Student::class, $student]);
 
-        return Inertia::render('Students/Edit', $student->toArray());
+        return Inertia::render('Students/Edit', [
+            //qua oltre che all'id devo aggiungere anche l'email perché
+            //è un attributo dinamico
+            'student' => array_merge(
+                [
+                    'id' => $student->id,
+                    'email' => $student->email
+                ],
+                $student->toArray()
+            )
+        ]);
     }
 
     /**
@@ -138,9 +154,13 @@ class StudentsController extends Controller
     {
         $this->authorize('update', [Student::class, $student]);
 
-        $this->studentUserValidator->validateData($request->toArray(), ['student' => $student]);
+        $this->studentUserValidator->validateData($request->toArray(), ['user' => $student->user]);
 
-        $this->studentRepository->save($student, $request->get('email'), $request->get('password'));
+        $this->studentRepository->save(
+            StudentFactory::new()->make($request->toArray()),
+            $request->get('email'),
+            $request->get('password')
+        );
 
         return Redirect::route('students.edit', $student->id);
     }
@@ -156,7 +176,7 @@ class StudentsController extends Controller
         $this->authorize('delete', [Student::class, $student]);
 
         //feature implementata solo in backend
-//        $this->studentRepository->delete($student);
+        $this->studentRepository->delete($student);
 
         return Inertia::location('/studenti');
     }

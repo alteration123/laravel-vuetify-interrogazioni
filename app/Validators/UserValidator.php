@@ -19,12 +19,12 @@ class UserValidator extends EntityValidator
      */
     protected function getRules($extendParameters): array
     {
-        /** @var User $administrator */
+        /** @var User $user */
         $user = array_key_exists('user', $extendParameters) ?
             $extendParameters['user'] : User::factory()->newModel();
         return [
             'name' => ['required', 'max:41'],
-            'password' => ['required'],
+            'password' => $user->id ? [] : ['required'],
             'email' => ['required',  Rule::unique('users', 'email')->ignore($user), 'email', 'max:50'],
         ];
     }

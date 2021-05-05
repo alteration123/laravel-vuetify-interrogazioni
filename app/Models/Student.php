@@ -56,7 +56,7 @@ class Student extends Model
      */
     public static function getFilters(): array
     {
-        return ['search', 'sort_order', 'sort_field'];
+        return ['search', 'sort_order', 'sort_field', 'items_per_page', 'current_page'];
     }
 
     /**
@@ -67,6 +67,7 @@ class Student extends Model
      */
     public function scopeFilter(Builder $query, array $filters)
     {
+        \Log::info(print_r($filters, true));
         $query->when($filters['search'] ?? null, function ($query, $search) {
             $query->where(function (Builder $query) use ($search) {
                 $query->where('first_name', 'like', '%' . $search . '%')
@@ -76,12 +77,14 @@ class Student extends Model
                         $query->where('email', 'like', '%' . $search . '%');
                     });
             });
-        })->when($filters['sort_field'] ?? null, function (Builder $query, string $sortField) use ($filters) {
+        });
+
+        $query->when($filters['sort_field'] ?? null, function (Builder $query, string $sortField) use ($filters) {
             if (strpos($sortField, 'email') !== false) {
                 $query->join('users', 'users.id', '=', 'students.user_id', 'students')
                     ->orderBy('email', $filters['sort_order']);
             } else {
-                $query->orderBy($sortField, $filters['sort_order']);
+                $query->orderBy($filters['sort_field'], $filters['sort_order']);
             }
         });
     }

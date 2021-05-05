@@ -30,12 +30,22 @@
                     ></v-text-field>
                 </v-card-title>
                 <v-data-table
+                    class="cursor-pointer"
+                    :options.sync="options"
+                    :custom-sort="getStudents"
                     :multi-sort="false"
-                    :sort-by.sync="sortBy"
-                    :sort-desc.sync="sortDesc"
                     :headers="headers"
                     :items="students.data"
+                    :items-per-page="form.items_per_page"
+                    @click:row="handleClick"
+                    hide-default-footer
                 ></v-data-table>
+                <v-pagination
+                    class="mb-5 mt-5"
+                    :disabled="students.last_page <= 1"
+                    v-model="form.current_page"
+                    :length="students.last_page"
+                ></v-pagination>
             </v-card>
         </div>
         <div>
@@ -49,7 +59,7 @@ import AppLayout from "../../Layouts/AppLayout";
 import JetButton from "../../Jetstream/Button";
 import pickBy from 'lodash/pickBy'
 import throttle from 'lodash/throttle'
-import {mapValues} from "lodash";
+import { mapValues } from "lodash";
 
 export default {
     components: {
@@ -59,12 +69,13 @@ export default {
 
     data() {
         return {
-            sortBy: '',
-            sortDesc: false,
+            options: {},
             form: {
                 search: '',
                 sort_order: null,
                 sort_field: null,
+                items_per_page: this.students.per_page,
+                current_page: this.students.current_page
             },
             headers: [
                 {
@@ -81,9 +92,12 @@ export default {
     },
 
     watch: {
-        sortBy: function () {
-            this.form.sort_field = this.getSortField()
-            this.form.sort_order = this.getSortOrder()
+        options: {
+            handler () {
+                this.form.sort_field = this.options.sortBy.length > 0 ? this.options.sortBy[0] : null;
+                this.form.sort_order = this.options.sortDesc.length > 0 ? (this.options.sortDesc[0] ? 'desc' : 'asc') : null;
+            },
+            deep: true,
         },
 
         form: {
@@ -101,14 +115,12 @@ export default {
     metaInfo: { title: 'Studenti' },
 
     methods: {
-        getSortField() {
-            return Array.isArray(this.sortBy) && this.sortBy.length > 0 ? this.sortBy[0] : (this.sortBy ?? '');
+        getStudents() {
+            return this.students.data;
         },
 
-        getSortOrder() {
-            let sortDesc = Array.isArray(this.sortDesc) && this.sortDesc.length > 0 ? this.sortDesc[0] : this.sortDesc;
-
-            return sortDesc ? 'desc' : 'asc';
+        handleClick(value) {
+            this.$inertia.get(this.route('students.edit', value.id));
         },
 
         loadData() {
@@ -118,8 +130,6 @@ export default {
                 newQuery[key] = query[key];
             });
             this.$inertia.put(window.location.pathname, newQuery, { preserveScroll: true, preserveState: true });
-            // this.deleteOldSelected();
-            // this.$scrollTo($(this.uniqueId), 10, {force:true, offset: 0});
         },
 
         createStudentRedirect() {

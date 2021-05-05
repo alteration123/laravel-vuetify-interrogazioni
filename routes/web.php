@@ -48,6 +48,14 @@ Route::get('studenti/crea', [StudentsController::class, 'create'])
     ->name('students.create')
     ->middleware('auth');
 
+Route::get('studenti/{student}/modifica', [StudentsController::class, 'edit'])
+    ->name('students.edit')
+    ->middleware('auth');
+
+Route::put('studenti/{student}', [StudentsController::class, 'update'])
+    ->name('students.update')
+    ->middleware('auth');
+
 Route::post('studenti/save', [StudentsController::class, 'store'])
     ->name('students.store')
     ->middleware('auth');

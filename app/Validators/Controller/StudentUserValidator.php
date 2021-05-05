@@ -27,7 +27,8 @@ class StudentUserValidator extends EntityValidator
         return [
             'first_name' => ['required', 'string', 'max:20'],
             'last_name' => ['required', 'string', 'max:20'],
-            'password' => ['required', 'string'],
+            //sarebbe da implementare più nel dettaglio
+            'password' => $user->id ? [] : ['required'],
             'email' => ['required', 'string',  Rule::unique('users', 'email')->ignore($user), 'email', 'max:50'],
             'age' => ['required', 'numeric', 'min:10', 'max:18'],
         ];

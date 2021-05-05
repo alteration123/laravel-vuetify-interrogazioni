@@ -62,7 +62,8 @@ class StudentRepository
         try {
             $student = $this->userRepository->get($email)->student;
         } catch (ModelNotFoundException | UserNotFoundException $e) {
-            throw new StudentNotFoundException($e->getMessage());
+            Log::error("Studente con email $email non trovato");
+            throw new StudentNotFoundException("Studente con email $email non trovato");
         }
 
         return $student;
@@ -118,24 +119,25 @@ class StudentRepository
     /**
      * @param Student $student
      * @param string $email
-     * @param string $password
+     * @param ?string $password
      * @return Student
      * @throws Throwable
      * @throws ValidationException
      */
-    public function save(Student $student, string $email, string $password): Student
+    public function save(Student $student, string $email, ?string $password = null): Student
     {
         try {
             DB::beginTransaction();
+            $oldStudent = $this->getById($student->id);
             /** @var User $user */
             $user = UserFactory::new()->make([
                 'name' => $student->first_name . ' ' . $student->last_name,
                 'email' => $email,
                 'password' => $password,
-                'id' => $student->user_id
+                'id' => $oldStudent->user->id
             ]);
             $this->userRepository->save($user);
-            $newStudent = $this->assignAndSave($this->getById($student->id), $student);
+            $newStudent = $this->assignAndSave($oldStudent, $student);
             DB::commit();
             return $newStudent;
         } catch (ValidationException $validationException) {
