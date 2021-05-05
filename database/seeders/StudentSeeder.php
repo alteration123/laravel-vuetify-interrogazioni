@@ -9,6 +9,7 @@ use Faker\Generator;
 use Faker\Provider\it_IT\Person;
 use Illuminate\Validation\ValidationException;
 use Log;
+use Throwable;
 
 /*
  * EXAMPLE::PROGETTO STUDENT_SEEDER
@@ -47,7 +48,7 @@ class StudentSeeder
     /**
      * @param int $numberOfStudents
      * @return int
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function execute(int $numberOfStudents): int
     {
